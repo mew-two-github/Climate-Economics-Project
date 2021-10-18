@@ -60,11 +60,12 @@ subplot(212); parcorr(diff_CO2,"NumLags",30); title('PACF diff_CO2');
 % observe visually to detect variance/mean changes
 figure;findchangepts(res2,'MaxNumChanges',3);
 ipt = findchangepts(res2,'MaxNumChanges',3);
-fspec = 'Variance before the first change point = %.3f \n Variance in the second region %.3f';
-fprintf(fspec,var(res2(1:ipt(1))),var(ipt(2):ipt(3)));
+fspec = 'Variance before the first change point = %f \n Variance in the second region %f';
+fprintf(fspec,var(res2(1:ipt(1))),var(res2(ipt(1):ipt(2))));
 % third region variance ignored because the region is too small
 all_pts = [ipt; 31];
 % 31 included because it has a huge dip
 % Noting down the years
 cpts_year = time(all_pts);
 
+%% Visualise Gini coeff
