@@ -1,4 +1,6 @@
 clear; close all;
+%% Get utility functions
+[f1,f2] = utils();
 %% Open data
 path = "./Data/india_data.xlsx";
 % opts = detectImportOptions(path);
@@ -46,84 +48,23 @@ subplot(212);plot(time(2:end),diff_GDP);title("Differenced GDP");xlabel("Time");
 % integrating effects! 
 %% ARIMA model for CO2
 figure;
-subplot(211); autocorr(diff_CO2);
-subplot(212); parcorr(diff_CO2,"NumLags",30);
-% try arima(5,1,3)
-vk = CO2;
-model1 = arima(1,1,1); 
-model1_est = estimate(model1,vk);
-% Residual analysis
-% Residual computation
-[res1,~,logL] = infer(model1_est,vk);
-% ACF of residuals
-figure();
-autocorr(res1,'NumLags',20)
-title('ACF of residuals from ARIMA(1,1,1) model')
-box off;
-% PACF of residuals
-figure();
-parcorr(res1,'NumLags',20)
-title('PACF of residuals from ARIMA(1,1,1) model')
-box off;
-% Whiteness test
-[h_model1,pval_model1] = lbqtest(res1);
-disp('Whiteness Test for Residuals results');
-disp(h_model1);disp(pval_model1);
+subplot(211); autocorr(diff_CO2); title('ACF diff_CO2');
+subplot(212); parcorr(diff_CO2,"NumLags",30); title('PACF diff_CO2');
+[est_m1,res,uf,of] = f1([1,1,1],1,CO2,0);
 % Residuals are white! so no underfitting. All coefficients except constant
 % term are significant
-model2 = arima(1,1,1); model2.Constant = 0; 
-model2_est = estimate(model2,vk);
-% Residual analysis
-[res2,~,logL] = infer(model2_est,vk);
-% Whiteness test
-[h_model2,pval_model2] = lbqtest(res2);
-disp('Whiteness Test for Residuals results');
-disp(h_model2);disp(pval_model2);
-% overfitting check
-summarize(model2_est)
-% Residual computation
-[res1,~,logL] = infer(model2_est,vk);
-figure;
-plot(time,CO2,time(2:58),forecast(model2_est,57,CO2(1:2)));
-%% ARIMA model for GDP
-figure;
-subplot(211); autocorr(diff_GDP);
-subplot(212); parcorr(diff_GDP,"NumLags",30);
-% try arima(5,1,3)
-vk = GDP;
-model1 = arima(1,1,1); 
-model1_est = estimate(model1,vk);
-% Residual analysis
-% Residual computation
-[res1_GDP,~,~] = infer(model1_est,vk);
-% ACF of residuals
-figure();
-autocorr(res1_GDP,'NumLags',20)
-title('ACF of residuals from ARIMA(1,1,1) model')
-box off;
-% PACF of residuals
-figure();
-parcorr(res1_GDP,'NumLags',20)
-title('PACF of residuals from ARIMA(1,1,1) model')
-box off;
-% Whiteness test
-[h_model1,pval_model1] = lbqtest(res1);
-disp('Whiteness Test for Residuals results');
-disp(h_model1);disp(pval_model1);
-% Residuals are white! so no underfitting. All coefficients except constant
-% term are significant
-model2 = arima(1,1,1); model2.Constant = 0; 
-model2_est = estimate(model2,vk);
-% Residual analysis
-[res2_GDP,~,~] = infer(model2_est,vk);
-% Whiteness test
-[h_model2,pval_model2] = lbqtest(res2_GDP);
-disp('Whiteness Test for Residuals results');
-disp(h_model2);disp(pval_model2);
-% overfitting check
-summarize(model2_est)
-% Residual computation
-[res1,~,logL] = infer(model2_est,vk);
-figure;
-plot(time,CO2,time(2:58),forecast(model2_est,57,CO2(1:2)));
+[est_m2,res2,uf2,of2] = f1([1,1,1],0,CO2,0);
+% Neither underfit nor overfit!
+%% CO2 Change points 
+% We find approximately where the mean changes using findchangepts and also
+% observe visually to detect variance/mean changes
+figure;findchangepts(res2,'MaxNumChanges',3);
+ipt = findchangepts(res2,'MaxNumChanges',3);
+fspec = 'Variance before the first change point = %.3f \n Variance in the second region %.3f';
+fprintf(fspec,var(res2(1:ipt(1))),var(ipt(2):ipt(3)));
+% third region variance ignored because the region is too small
+all_pts = [ipt; 31];
+% 31 included because it has a huge dip
+% Noting down the years
+cpts_year = time(all_pts);
 
