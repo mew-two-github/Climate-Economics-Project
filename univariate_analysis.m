@@ -34,7 +34,7 @@ results = zeros(m,2);
 for i = 1:m
     [results(i,1), results(i,2)] = adftest((Data(:,i)));
 end
-% Unit root test not rejected for both GDP and CO2 => has integrating
+% Unit root hypothesis not rejected for both GDP and CO2 => has integrating
 % effects
 CO2 = (Data(:,1));
 diff_CO2 = diff(CO2);
@@ -50,10 +50,10 @@ subplot(212);plot(time(2:end),diff_GDP);title("Differenced GDP");xlabel("Time");
 figure;
 subplot(211); autocorr(diff_CO2); title('ACF diff_CO2');
 subplot(212); parcorr(diff_CO2,"NumLags",30); title('PACF diff_CO2');
-[est_m1,res,uf,of] = f1([1,1,1],1,CO2,0);
+[est_m1,res,uf,of] = f1([1,1,1],1,CO2,0,0);
 % Residuals are white! so no underfitting. All coefficients except constant
 % term are significant
-[est_m2,res2,uf2,of2] = f1([1,1,1],0,CO2,0);
+[est_m2,res2,uf2,of2] = f1([1,1,1],0,CO2,0,0);
 % Neither underfit nor overfit!
 %% CO2 Change points 
 % We find approximately where the mean changes using findchangepts and also
@@ -67,5 +67,3 @@ all_pts = [ipt; 31];
 % 31 included because it has a huge dip
 % Noting down the years
 cpts_year = time(all_pts);
-
-%% Visualise Gini coeff

@@ -6,7 +6,7 @@ end
 %% arima_remarks
 % Performs arima modelling for given parameters, residual analysis and test
 % for significance of the coefficents
-function [est_m,res,underfit_test,overfit_test] = arima_remarks(params,constant,vk,plots)
+function [est_m,res,underfit_test,overfit_test] = arima_remarks(params,constant,vk,plots,verbose)
 p = params(1);i=params(2);m=params(3);
 model = arima(p,i,m); 
 a = strcat('(' ,num2str(p),',', num2str(i), ',', num2str(m), ')') ;
@@ -32,8 +32,10 @@ if plots
 end
 % Whiteness test (test for underfit)
 [h_model,pval_model] = lbqtest(res);
-disp('Whiteness Test for Residuals results');
-disp(h_model);disp(pval_model);
+if verbose
+    disp('Whiteness Test for Residuals results');
+    disp(h_model);disp(pval_model);
+end
 underfit_test = ~h_model;
 % uf = 1 means no underfit
 % Test for overfit
@@ -44,7 +46,6 @@ overfit_test = prod(sig);
 end
 %% Chow test
 % Perform chowtest at each of the given points and return vector of cp
-function cp = chowt(X,y,points)
-    
-    y = x;
+function cp = chowt(X)%,y,points)
+    cp = X;
 end
