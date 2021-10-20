@@ -45,6 +45,7 @@ dlogX = X(1:end-1,:);
 [h2,p2] = adftest(X(:,1));
 % h2 = 0, so difference the series
 dlogX(:,1) = diff(X(:,1));
+
 [h3,p3] = adftest(X(:,2));
 % h3 is not 0, but since other 2 are differenced, need to remove one data
 % point
@@ -84,4 +85,38 @@ subplot(212); parcorr(res2);
 % Residuals are correlated!
 
 %% FGLS again
+% Not continuing this. However the procedure: fit an MA model to res2,
+% convert to AR using arma2ar. Then find significant terms in AR, denote
+% number of terms as p. Pass that p to FGLS
 % [coeff2,se2,EstCoeffCov2] = fgls(X,y,'arlags',1,'display','final');
+%% BOD x Gini
+bod = xlsread("./Data/BOD.xlsx","Averaged");
+figure;
+plot(bod(1,:),bod(2,:));
+title("BOD"); ylabel("BOD in mg/L"); xlabel("Year");
+% Since sample size is small (~10) not subjecting it to adftest
+bod_data = log(bod(2,1:end-4))'; % because other data till 2014
+% Resize matrices
+idx = find(time==2007);
+dlogy_new = dlogy(idx:end);
+dlogX_new = [bod_data,dlogX(idx:end,2)];
+
+% run ols
+ols_mdl_bod = fitlm(dlogX,dlogy);
+res_bod = ols_mdl_bod.Residuals.Raw;
+ols_mdl_bod
+
+fprintf('R-squared = %.4f, Adjusted R-squared = %.4f \n',ols_mdl_bod.Rsquared.Ordinary,ols_mdl_bod.Rsquared.Adjusted);
+figure;
+subplot(211); autocorr(res_bod,"NumLags",5);
+subplot(212); parcorr(res_bod,"NumLags",5);
+% No autocorrelation effects
+[hresBOD,presBOD] = lbqtest(res_bod);
+% Residuals are white
+[h_adres_BOD,p_adres_BOD] = adtest(res_bod);
+% Gaussianity rejected! Residuals are not Gaussian
+figure;
+plotResiduals(ols_mdl_bod,'caseorder');
+% Exhibits some heteroskedasticity
+% run fgls
+[coeff_BOD,se_BOD,EstCoeffCov_BOD] = fgls(dlogX_new,dlogy_new,'innovMdl','HC0','display','final');
