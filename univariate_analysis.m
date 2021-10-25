@@ -66,4 +66,4 @@ fprintf(fspec,var(res2(1:ipt(1))),var(res2(ipt(1):ipt(2))));
 all_pts = [ipt; 31];
 % 31 included because it has a huge dip
 % Noting down the years
-cpts_year = time(all_pts);
+cpts_year = time(all_pts)
